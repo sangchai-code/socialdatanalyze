@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Analytics — อ่าน Data ให้ถูกจุด</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090b;
+  --bg2: #0e1012;
+  --card: #131517;
+  --card2: #1a1d20;
+  --or: #FF6B00;
+  --or2: rgba(255,107,0,0.12);
+  --or3: rgba(255,107,0,0.05);
+  --tx: #f0ece4;
+  --tx2: #9a9590;
+  --tx3: #4e5055;
+  --bd: #1e2124;
+  --bd2: #2a2d32;
+  --gr: #22c55e;
+  --re: #ef4444;
+  --ye: #f59e0b;
+  --bl: #3b82f6;
+  --pu: #a855f7;
+  --tl: #14b8a6;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--tx);
+  font-family: 'Sarabun', sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+/* SCROLL PROGRESS */
+#sp { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--bd); z-index: 999; }
+#spb { height: 100%; background: linear-gradient(90deg, var(--or), #ffaa00); width: 0; transition: width .1s; }
+
+/* SIDEBAR */
+#sb {
+  position: fixed; left: 0; top: 0; bottom: 0; width: 258px;
+  background: var(--bg2); border-right: 1px solid var(--bd);
+  z-index: 200; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: #222 transparent;
+  display: flex; flex-direction: column;
+}
+#sb::-webkit-scrollbar { width: 3px; }
+#sb::-webkit-scrollbar-thumb { background: #222; }
+.sb-logo { padding: 24px 20px 18px; border-bottom: 1px solid var(--bd); }
+.sb-wordmark { font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: 3px; color: var(--or); }
+.sb-meta { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--tx3); margin-top: 3px; }
+.sb-sec { font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--tx3); padding: 14px 20px 5px; }
+.ni { display: block; padding: 8px 20px; font-size: 12.5px; color: var(--tx2); text-decoration: none; border-left: 2px solid transparent; transition: all .15s; line-height: 1.4; }
+.ni:hover, .ni.active { color: var(--tx); border-left-color: var(--or); background: var(--or3); }
+.ni .nn { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--tx3); margin-right: 8px; }
+
+/* MAIN */
+#main { margin-left: 258px; min-height: 100vh; }
+.section { padding: 56px 60px; border-bottom: 1px solid var(--bd); }
+.section:last-child { border-bottom: none; }
+
+/* HERO */
+#hero {
+  padding: 76px 60px 64px;
+  border-bottom: 1px solid var(--bd);
+  background: linear-gradient(145deg, var(--bg) 50%, #0d0800);
+  position: relative; overflow: hidden;
+}
+#hero::before {
+  content: '';
+  position: absolute; top: -80px; right: -60px;
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(255,107,0,0.08) 0%, transparent 65%);
+  pointer-events: none;
+}
+#hero::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--or), transparent);
+}
+.eyebrow {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--or);
+  margin-bottom: 16px;
+}
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(52px, 7vw, 90px);
+  line-height: .92; letter-spacing: 2px; margin-bottom: 14px;
+}
+.hero-title span { color: var(--or); }
+.hero-sub { font-size: 15px; color: var(--tx2); max-width: 600px; line-height: 1.8; margin-bottom: 36px; }
+.hero-tags { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 40px; }
+.htag {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 5px 14px; border-radius: 3px; border: 1px solid;
+}
+.htag-or { background: var(--or2); border-color: rgba(255,107,0,0.3); color: var(--or); }
+.htag-re { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--re); }
+.htag-gr { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.3); color: var(--gr); }
+.stat-row { display: flex; gap: 32px; flex-wrap: wrap; }
+.stat { border-left: 2px solid var(--or); padding-left: 14px; }
+.stat-n { font-family: 'Bebas Neue', sans-serif; font-size: 34px; color: var(--or); line-height: 1; }
+.stat-n.red { color: var(--re); }
+.stat-l { font-size: 11px; color: var(--tx3); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+/* SECTION HEADERS */
+.sec-hd { margin-bottom: 32px; }
+.sec-tag { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--or); margin-bottom: 6px; }
+.sec-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 1.5px; color: var(--tx); line-height: 1.1; margin-bottom: 6px; }
+.sec-desc { font-size: 13.5px; color: var(--tx2); max-width: 680px; line-height: 1.7; }
+
+/* CARDS */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+.card { background: var(--card); border: 1px solid var(--bd); border-radius: 6px; padding: 20px; }
+.card-or { border-top: 2px solid var(--or); }
+.card-re { border-top: 2px solid var(--re); }
+.card-gr { border-top: 2px solid var(--gr); }
+.card-ye { border-top: 2px solid var(--ye); }
+.card-bl { border-top: 2px solid var(--bl); }
+.card-pu { border-top: 2px solid var(--pu); }
+.card-tl { border-top: 2px solid var(--tl); }
+.c-icon { font-size: 22px; margin-bottom: 10px; }
+.c-title { font-size: 13.5px; font-weight: 700; color: var(--tx); margin-bottom: 7px; }
+.c-body { font-size: 13px; color: var(--tx2); line-height: 1.7; }
+
+/* BADGE */
+.badge {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 3px;
+}
+.b-or { background: var(--or2); color: var(--or); border: 1px solid rgba(255,107,0,0.3); }
+.b-re { background: rgba(239,68,68,0.12); color: var(--re); border: 1px solid rgba(239,68,68,0.3); }
+.b-gr { background: rgba(34,197,94,0.12); color: var(--gr); border: 1px solid rgba(34,197,94,0.3); }
+.b-ye { background: rgba(245,158,11,0.12); color: var(--ye); border: 1px solid rgba(245,158,11,0.3); }
+.b-bl { background: rgba(59,130,246,0.12); color: var(--bl); border: 1px solid rgba(59,130,246,0.3); }
+.b-pu { background: rgba(168,85,247,0.12); color: var(--pu); border: 1px solid rgba(168,85,247,0.3); }
+
+/* HIGHLIGHT BOX */
+.hbox {
+  background: linear-gradient(135deg, #0d0b08, #130d06);
+  border: 1px solid rgba(255,107,0,0.22); border-radius: 6px;
+  padding: 24px 28px; margin-bottom: 20px; position: relative; overflow: hidden;
+}
+.hbox::before {
+  content: '"'; position: absolute; top: -14px; left: 16px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 110px;
+  color: var(--or); opacity: .06; line-height: 1; pointer-events: none;
+}
+.hbox-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--or); margin-bottom: 8px; }
+.hbox-text { font-size: 14.5px; color: var(--tx); line-height: 1.8; position: relative; }
+.hbox-text strong { color: var(--or); }
+
+/* INSIGHT */
+.insight {
+  background: rgba(255,107,0,0.04); border-left: 3px solid var(--or);
+  padding: 14px 18px; margin: 16px 0; font-size: 13px; color: var(--tx2);
+  line-height: 1.7; border-radius: 0 5px 5px 0;
+}
+.insight strong { color: var(--or); }
+.insight.warn { border-left-color: var(--re); background: rgba(239,68,68,0.04); }
+.insight.warn strong { color: var(--re); }
+.insight.good { border-left-color: var(--gr); background: rgba(34,197,94,0.04); }
+.insight.good strong { color: var(--gr); }
+
+/* TABLE */
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl th {
+  background: var(--card2); padding: 11px 15px; text-align: left;
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+  letter-spacing: 1.5px; text-transform: uppercase; color: var(--tx3);
+  border-bottom: 1px solid var(--bd2);
+}
+.tbl td {
+  padding: 12px 15px; border-bottom: 1px solid var(--bd);
+  color: var(--tx2); vertical-align: top; line-height: 1.6;
+}
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: var(--or3); }
+.tbl td strong { color: var(--tx); }
+
+/* DIAGNOSTIC BLOCK */
+.diag-block {
+  background: var(--card); border: 1px solid var(--bd); border-radius: 6px;
+  overflow: hidden; margin-bottom: 14px;
+}
+.diag-hd {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; background: var(--card2); border-bottom: 1px solid var(--bd);
+}
+.diag-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 36px; line-height: 1;
+  flex-shrink: 0; width: 36px; opacity: .4;
+}
+.diag-title { font-size: 14px; font-weight: 700; color: var(--tx); }
+.diag-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--tx3); margin-top: 2px; }
+.diag-body { padding: 18px 20px; }
+.diag-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.diag-col-label {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;
+}
+.diag-item {
+  font-size: 12.5px; color: var(--tx2); padding: 8px 12px;
+  border-radius: 4px; margin-bottom: 7px; line-height: 1.6;
+  border-left: 2px solid;
+}
+
+/* METRICS DASHBOARD */
+.metric-card {
+  background: var(--card); border: 1px solid var(--bd); border-radius: 6px;
+  padding: 20px; position: relative; overflow: hidden;
+}
+.metric-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.metric-card.primary::before { background: var(--or); }
+.metric-card.danger::before { background: var(--re); }
+.metric-card.success::before { background: var(--gr); }
+.metric-card.info::before { background: var(--bl); }
+.metric-card.warn::before { background: var(--ye); }
+.metric-name { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--tx3); margin-bottom: 8px; }
+.metric-val { font-family: 'Bebas Neue', sans-serif; font-size: 44px; line-height: 1; margin-bottom: 4px; }
+.metric-val.red { color: var(--re); }
+.metric-val.green { color: var(--gr); }
+.metric-val.or { color: var(--or); }
+.metric-context { font-size: 12px; color: var(--tx2); line-height: 1.6; }
+.metric-target { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--tx3); margin-top: 8px; }
+.metric-target span { color: var(--gr); }
+
+/* COMPARISON BLOCK */
+.pvs { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--bd); border-radius: 6px; overflow: hidden; }
+.pvs-side { padding: 22px 24px; }
+.pvs-left { background: rgba(239,68,68,0.04); border-right: 1px solid var(--bd); }
+.pvs-right { background: rgba(34,197,94,0.04); }
+.pvs-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.pvs-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; }
+.pvs-label.red { color: var(--re); }
+.pvs-label.grn { color: var(--gr); }
+.pvs-item { font-size: 13px; color: var(--tx2); padding: 8px 0; border-bottom: 1px solid var(--bd); line-height: 1.6; }
+.pvs-item:last-child { border-bottom: none; }
+.pvs-item strong { color: var(--tx); }
+
+/* FLOW STEPS */
+.flow { display: flex; align-items: stretch; gap: 0; border: 1px solid var(--bd); border-radius: 6px; overflow: hidden; margin-bottom: 20px; }
+.flow-step { flex: 1; padding: 18px 16px; background: var(--card); position: relative; }
+.flow-step:not(:last-child) { border-right: 1px solid var(--bd); }
+.flow-step-num { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--or); line-height: 1; margin-bottom: 6px; }
+.flow-step-title { font-size: 12.5px; font-weight: 700; color: var(--tx); margin-bottom: 5px; }
+.flow-step-body { font-size: 12px; color: var(--tx2); line-height: 1.6; }
+
+/* TIMELINE / CASE STUDY */
+.case-clip { background: var(--card); border: 1px solid var(--bd); border-radius: 6px; overflow: hidden; margin-bottom: 10px; }
+.case-hd { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--card2); border-bottom: 1px solid var(--bd); }
+.case-time { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--or); min-width: 80px; }
+.case-action { font-size: 13px; font-weight: 600; color: var(--tx); }
+.case-why { font-size: 12px; color: var(--tx2); padding: 12px 18px; line-height: 1.65; }
+
+/* DIVIDER */
+.div-or { height: 1px; background: linear-gradient(90deg, var(--or), transparent); margin: 22px 0; }
+
+/* RATIO BAR */
+.ratio-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.ratio-label { font-size: 12.5px; color: var(--tx2); min-width: 220px; }
+.ratio-bg { flex: 1; height: 8px; background: var(--bd2); border-radius: 4px; overflow: hidden; }
+.ratio-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+.ratio-pct { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; min-width: 50px; text-align: right; }
+
+/* CHECKLIST */
+.check-item { display: flex; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--bd); align-items: flex-start; }
+.check-item:last-child { border-bottom: none; }
+.check-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+.check-content-title { font-size: 13.5px; font-weight: 600; color: var(--tx); margin-bottom: 3px; }
+.check-content-body { font-size: 12.5px; color: var(--tx2); line-height: 1.65; }
+
+/* FORMULA BLOCK */
+.formula {
+  background: var(--card2); border: 1px solid var(--bd2); border-radius: 6px;
+  padding: 22px 26px; font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 2px; color: var(--tx); line-height: 1.4;
+  text-align: center;
+}
+.formula span { color: var(--or); }
+.formula .arrow { color: var(--tx3); margin: 0 10px; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bd2); border-radius: 2px; }
+
+@media (max-width: 900px) {
+  #sb { display: none; } #main { margin-left: 0; }
+  .section { padding: 36px 20px; }
+  #hero { padding: 48px 20px 40px; }
+  .g2, .g3, .g4, .diag-grid { grid-template-columns: 1fr; }
+  .pvs { grid-template-columns: 1fr; }
+  .pvs-left { border-right: none; border-bottom: 1px solid var(--bd); }
+  .flow { flex-direction: column; }
+  .flow-step:not(:last-child) { border-right: none; border-bottom: 1px solid var(--bd); }
+}
+</style>
+</head>
+<body>
+
+<div id="sp"><div id="spb"></div></div>
+
+<!-- SIDEBAR -->
+<nav id="sb">
+  <div class="sb-logo">
+    <div class="sb-wordmark">Content Analytics</div>
+    <div class="sb-meta">Team Guide · 2026</div>
+  </div>
+  <span class="sb-sec">Overview</span>
+  <a class="ni active" href="#hero"><span class="nn">00</span>Overview</a>
+  <a class="ni" href="#problem"><span class="nn">01</span>ปัญหาที่เจอ</a>
+  <span class="sb-sec">Framework</span>
+  <a class="ni" href="#metrics"><span class="nn">02</span>Metrics ที่ต้องดู</a>
+  <a class="ni" href="#diagnostic"><span class="nn">03</span>วินิจฉัยจาก Data</a>
+  <span class="sb-sec">Case Study</span>
+  <a class="ni" href="#casedata"><span class="nn">04</span>ข้อมูลจริงจากคลิป</a>
+  <a class="ni" href="#fix"><span class="nn">05</span>แก้ยังไง</a>
+  <span class="sb-sec">Action</span>
+  <a class="ni" href="#formula"><span class="nn">06</span>สูตรคอนเทนท์ใหม่</a>
+  <a class="ni" href="#abtest"><span class="nn">07</span>A/B Testing</a>
+  <a class="ni" href="#checklist"><span class="nn">08</span>Weekly Checklist</a>
+</nav>
+
+<div id="main">
+
+<!-- HERO -->
+<section id="hero">
+  <div class="eyebrow">Content Analytics Framework · Team Internal Report</div>
+  <div class="hero-title">อ่าน DATA<br><span>ให้ถูกจุด</span></div>
+  <p class="hero-sub">
+    ปัญหาของทีมไม่ได้อยู่ที่ทำคอนเทนท์ไม่ดี — แต่อยู่ที่การ<strong style="color:var(--tx);"> วินิจฉัยผิดจุดจากการอ่าน Data ไม่ครบ</strong>
+    Report นี้จะสอนให้อ่าน Metrics ที่ถูกต้อง แปลผลให้เป็น Action ได้จริง
+  </p>
+  <div class="hero-tags">
+    <span class="htag htag-re">⚠️ Retention Rate ต่ำ = ปัญหาจริง</span>
+    <span class="htag htag-or">Like/Share/Save = ไม่ใช่ตัวชี้วัดหลัก</span>
+    <span class="htag htag-gr">✓ Fix ที่ถูกจุด = ผล Platform ดีขึ้น</span>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-n red">5.49s</div><div class="stat-l">Avg Watch Time (คลิป 52วิ)</div></div>
+    <div class="stat"><div class="stat-n red">0.7%</div><div class="stat-l">Completion Rate</div></div>
+    <div class="stat"><div class="stat-n red">0:01</div><div class="stat-l">จุดที่คนหยุดดูมากที่สุด</div></div>
+  </div>
+</section>
+
+<!-- SECTION 01: PROBLEM -->
+<section class="section" id="problem">
+  <div class="sec-hd">
+    <div class="sec-tag">Section 01 — ปัญหาที่เจอ</div>
+    <div class="sec-title">วัดผิดจุด → แก้ผิดที่</div>
+    <div class="sec-desc">ทีมหลายทีมยังอ่าน Performance จากตัวเลขที่ <em>เห็นได้ง่าย</em> แต่ไม่ใช่ตัวเลขที่ <em>บอกปัญหาจริง</em></div>
+  </div>
+
+  <div class="hbox" style="margin-bottom:24px;">
+    <div class="hbox-label">Core Insight จากทีม</div>
+    <div class="hbox-text">
+      ทีมเห็น Like / Share / Comment / Save น้อย → สรุปว่า "คอนเทนท์ไม่ดี" → แก้ทุกอย่างแบบสุ่ม<br>
+      แต่จริงๆ แล้วตัวเลขเหล่านั้น<strong> เป็นผลลัพธ์ปลายทาง ไม่ใช่สาเหตุต้นทาง</strong>
+      ปัญหาจริงอยู่ที่ Retention — คนยังไม่ทันเห็นคอนเทนท์ก็เลิกดูแล้ว
+    </div>
+  </div>
+
+  <div class="pvs" style="margin-bottom:20px;">
+    <div class="pvs-side pvs-left">
+      <div class="pvs-header">
+        <span style="font-size:18px;">❌</span>
+        <div class="pvs-label red">สิ่งที่ทีมทำอยู่ตอนนี้</div>
+      </div>
+      <div class="pvs-item"><strong>ดูแค่ยอด Like / Share / Comment / Save</strong> เป็น KPI หลัก</div>
+      <div class="pvs-item"><strong>ตัดสินว่าคอนเทนท์ "ไม่ดี"</strong> จากตัวเลขพวกนี้ตัวเดียว</div>
+      <div class="pvs-item"><strong>แก้ทุกอย่าง</strong> — เปลี่ยนธีม เปลี่ยน Caption เปลี่ยน Thumbnail โดยไม่รู้ว่าปัญหาคือตรงไหน</div>
+      <div class="pvs-item"><strong>ไม่เคยเข้าไปดู</strong> Retention Graph, Watch Time, Completion Rate จริงจัง</div>
+    </div>
+    <div class="pvs-side pvs-right">
+      <div class="pvs-header">
+        <span style="font-size:18px;">✅</span>
+        <div class="pvs-label grn">สิ่งที่ควรทำแทน</div>
+      </div>
+      <div class="pvs-item"><strong>เปิด Retention Graph ก่อน</strong> ดูว่าคนหยุดดูตรงไหนในคลิป</div>
+      <div class="pvs-item"><strong>ดู Average Watch Time</strong> เทียบกับความยาวคลิป — คิดเป็น %</div>
+      <div class="pvs-item"><strong>ดู Completion Rate</strong> ว่ามีกี่ % ที่ดูจบ</div>
+      <div class="pvs-item"><strong>วินิจฉัยก่อนแก้</strong> — ปัญหาคือ Hook? Body? ความยาว? เล่าช้า? แล้วค่อย Fix ให้ตรงจุด</div>
+    </div>
+  </div>
+
+  <div class="insight warn">
+    <strong>ทำไมถึงสำคัญ:</strong> ถ้าแก้ Caption แต่ปัญหาจริงคือ Hook 3 วินาทีแรก — คลิปหน้าต่อไปก็ยัง Performance แย่เหมือนเดิม เสียเวลา เสียทรัพยากร และทีมเริ่มหมดไฟเพราะแก้ไม่หาย
+  </div>
+</section>
+
+<!-- SECTION 02: METRICS -->
+<section class="section" id="metrics">
+  <div class="sec-hd">
+    <div class="sec-tag">Section 02 — Metrics ที่ต้องดู</div>
+    <div class="sec-title">Metrics 3 ระดับ — อ่านครบ วินิจฉัยได้</div>
+    <div class="sec-desc">แบ่ง Metrics เป็น 3 กลุ่มตาม Priority — ยิ่ง Priority สูง ยิ่งต้องดูก่อน</div>
+  </div>
+
+  <!-- Tier 1 -->
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--or);margin-bottom:14px;">🔴 TIER 1 — MUST WATCH (วินิจฉัยปัญหา)</div>
+  <div class="g3" style="margin-bottom:24px;">
+    <div class="metric-card danger">
+      <div class="metric-name">Retention Rate / Curve</div>
+      <div class="metric-val red">FIRST</div>
+      <div class="metric-context">กราฟแสดงว่า <strong style="color:var(--tx);">คนหยุดดูตรงไหน</strong> ในคลิป จุดที่กราฟดิ่งลงอย่างรวดเร็ว = จุดที่ต้องแก้</div>
+      <div class="metric-target">เป้า: <span>กราฟค่อยๆ ลงต่ำ ไม่ดิ่งในช่วงต้น</span></div>
+    </div>
+    <div class="metric-card danger">
+      <div class="metric-name">Average Watch Time (%)</div>
+      <div class="metric-val red">%</div>
+      <div class="metric-context">นำ Watch Time หารด้วยความยาวคลิป ถ้าอยู่ที่ 10% หมายความว่าคนดูแค่ 1 ใน 10 ของคลิปแล้วออก</div>
+      <div class="metric-target">เป้า Short-form: <span>&gt; 50%</span> / Long-form: <span>&gt; 30%</span></div>
+    </div>
+    <div class="metric-card danger">
+      <div class="metric-name">Completion Rate</div>
+      <div class="metric-val red">%</div>
+      <div class="metric-context">% ของคนที่ดูจนจบ หรือเกือบจบ ถ้า 0.7% แปลว่า 993 ใน 1,000 คนไม่ดูจบ Platform จะไม่ Push คลิปนั้น</div>
+      <div class="metric-target">เป้า TikTok/Reels: <span>&gt; 25%</span></div>
+    </div>
+  </div>
+
+  <!-- Tier 2 -->
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ye);margin-bottom:14px;">🟡 TIER 2 — CONTEXT METRICS (ประกอบการวินิจฉัย)</div>
+  <div class="g4" style="margin-bottom:24px;">
+    <div class="metric-card warn">
+      <div class="metric-name">3-Second Hold Rate</div>
+      <div class="metric-val or" style="font-size:32px;">3s</div>
+      <div class="metric-context">% ที่ดูเกิน 3 วินาที บอกว่า Hook แรกทำงานได้ดีแค่ไหน ถ้าต่ำ = Hook ไม่หยุดนิ้ว</div>
+      <div class="metric-target">เป้า: <span>&gt; 60%</span></div>
+    </div>
+    <div class="metric-card warn">
+      <div class="metric-name">Play-through Rate</div>
+      <div class="metric-val or" style="font-size:32px;">→</div>
+      <div class="metric-context">ดูว่าคนผ่านจากช่วง A ไป B ได้กี่ % วัด Retention ในแต่ละ Segment ของคลิป</div>
+      <div class="metric-target">เป้า: <span>ไม่ดิ่งเกิน 20% ในช่วงใดช่วงหนึ่ง</span></div>
+    </div>
+    <div class="metric-card warn">
+      <div class="metric-name">Replays / Loops</div>
+      <div class="metric-val or" style="font-size:32px;">↺</div>
+      <div class="metric-context">จำนวนครั้งที่คนดูซ้ำ สัญญาณว่าคอนเทนท์มีคุณค่าพอให้ดูอีก</div>
+      <div class="metric-target">เป้า: <span>Replay Rate &gt; 5%</span></div>
+    </div>
+    <div class="metric-card warn">
+      <div class="metric-name">Profile Visit Rate</div>
+      <div class="metric-val or" style="font-size:32px;">→</div>
+      <div class="metric-context">คนที่เข้ามาดู Profile หลังดูคลิป = สนใจมากพอจะหาข้อมูลเพิ่ม</div>
+      <div class="metric-target">เป้า: <span>&gt; 1–2%</span></div>
+    </div>
+  </div>
+
+  <!-- Tier 3 -->
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);margin-bottom:14px;">⚪ TIER 3 — VANITY METRICS (ดูเสริม ไม่ใช่หลัก)</div>
+  <div style="background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:16px 20px;">
+    <div class="g4">
+      <div style="text-align:center;padding:12px;">
+        <div style="font-size:22px;margin-bottom:6px;">👍</div>
+        <div style="font-size:13px;font-weight:600;color:var(--tx2);">Likes</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:4px;">สะท้อนได้แค่ว่าคนชอบ ไม่ได้บอกว่าดูทั้งหมดไหม</div>
+      </div>
+      <div style="text-align:center;padding:12px;border-left:1px solid var(--bd);">
+        <div style="font-size:22px;margin-bottom:6px;">↗️</div>
+        <div style="font-size:13px;font-weight:600;color:var(--tx2);">Shares</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:4px;">ดีมาก แต่ไม่ได้แปลว่า Retention ดีเสมอไป</div>
+      </div>
+      <div style="text-align:center;padding:12px;border-left:1px solid var(--bd);">
+        <div style="font-size:22px;margin-bottom:6px;">💬</div>
+        <div style="font-size:13px;font-weight:600;color:var(--tx2);">Comments</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:4px;">บอกว่า Engage แต่ไม่ได้แปลว่าดูจนจบ</div>
+      </div>
+      <div style="text-align:center;padding:12px;border-left:1px solid var(--bd);">
+        <div style="font-size:22px;margin-bottom:6px;">🔖</div>
+        <div style="font-size:13px;font-weight:600;color:var(--tx2);">Saves</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:4px;">ดีมากสำหรับ Content ที่ให้ความรู้ แต่ไม่ใช่ KPI หลัก</div>
+      </div>
+    </div>
+    <div class="insight" style="margin-top:14px;margin-bottom:0;">
+      <strong>สรุป Tier 3:</strong> Metrics เหล่านี้ไม่ใช่ตัวตัดสินว่าคอนเทนท์ดีหรือไม่ดี แต่เป็น <em>ผลลัพธ์ที่ตามมา</em> เมื่อ Tier 1–2 ดี — ถ้า Retention ดี Reach จะขึ้น แล้ว Like/Share/Comment จะตามมาเอง
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 03: DIAGNOSTIC -->
+<section class="section" id="diagnostic">
+  <div class="sec-hd">
+    <div class="sec-tag">Section 03 — วินิจฉัยจาก Data</div>
+    <div class="sec-title">อ่าน Symptom → วินิจฉัย → แก้ตรงจุด</div>
+    <div class="sec-desc">เหมือนหมอวินิจฉัยโรค — ต้องรู้ว่า Symptom (ตัวเลขที่ผิดปกติ) บอกว่าปัญหาคืออะไร และจะแก้ตรงไหน</div>
+  </div>
+
+  <!-- Diagnostic 1 -->
+  <div class="diag-block">
+    <div class="diag-hd">
+      <div class="diag-num" style="color:var(--re);">1</div>
+      <div>
+        <div class="diag-title">Most Viewers Drop at 0:01 — คนหยุดดูในวินาทีแรก</div>
+        <div class="diag-sub">SYMPTOM: Retention Graph ดิ่งลงทันทีในช่วง 1–3 วินาทีแรก</div>
+      </div>
+      <span class="badge b-re" style="margin-left:auto;">Critical</span>
+    </div>
+    <div class="diag-body">
+      <div class="diag-grid">
+        <div>
+          <div class="diag-col-label" style="color:var(--re);">🔴 Data บอกว่า</div>
+          <div class="diag-item" style="border-color:var(--re);background:rgba(239,68,68,0.04);color:var(--tx2);">คนเห็นคลิปแล้วเลื่อนออกไปทันที ก่อนจะรู้ว่าเนื้อหาคืออะไร</div>
+          <div class="diag-item" style="border-color:var(--re);background:rgba(239,68,68,0.04);color:var(--tx2);">ไม่ใช่ปัญหาที่เนื้อหากลางหรือท้ายคลิป</div>
+          <div class="diag-item" style="border-color:var(--re);background:rgba(239,68,68,0.04);color:var(--tx2);">3-Second Hold Rate ต่ำมาก &lt; 40%</div>
+        </div>
+        <div>
+          <div class="diag-col-label" style="color:var(--ye);">🔎 วินิจฉัยว่า</div>
+          <div class="diag-item" style="border-color:var(--ye);background:rgba(245,158,11,0.04);color:var(--tx2);">Hook ไม่ทำงาน — ภาพหรือเสียงเปิดไม่ได้หยุดนิ้วคนดู</div>
+          <div class="diag-item" style="border-color:var(--ye);background:rgba(245,158,11,0.04);color:var(--tx2);">ไม่มี Curiosity Gap ที่ทำให้อยากดูต่อ</div>
+          <div class="diag-item" style="border-color:var(--ye);background:rgba(245,158,11,0.04);color:var(--tx2);">เปิดคลิปด้วยโลโก้ / ชื่อแบรนด์ / ภาพสวยแต่ไม่มีประเด็น</div>
+        </div>
+        <div>
+          <div class="diag-col-label" style="color:var(--gr);">✅ ต้องแก้ที่</div>
+          <div class="diag-item" style="border-color:var(--gr);background:rgba(34,197,94,0.04);color:var(--tx2);"><strong style="color:var(--tx);">Hook 3 วิแรก</strong> — เปิดด้วยปัญหา คำถาม หรือผลลัพธ์ที่น่าตกใจ</div>
+          <div class="diag-item" style="border-color:var(--gr);background:rgba(34,197,94,0.04);color:var(--tx2);"><strong style="color:var(--tx);">ภาพแรก</strong> ต้องบอกว่าคลิปนี้เกี่ยวกับอะไรภายใน 1 วินาที</div>
+          <div class="diag-item" style="border-color:var(--gr);background:rgba(34,197,94,0.04);color:var(--tx2);"><strong style="color:var(--tx);">ห้ามเปิดด้วย Intro, โลโก้, หรือ "สวัสดีทุกคน"</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diagnostic 2 -->
+  <div class="diag-block">
+    <div class="diag-hd">
+      <div class="diag-num" style="color:var(--ye);">2</div>
+      <div>
+        <div class="diag-title">Average Watch Time ต่ำ แต่ Retention ไม่ได้ดิ่งในวินาทีแรก</div>
+        <div class="diag-sub">SYMPTOM: คนดูผ่าน 3 วิแรก แต่ออกไปที่กลางคลิป</div>
+      </div>
+      <span class="badge b-ye">Medium</span>
+    </div>
+    <div class="diag-body">
+      <div class="diag-grid">
+        <div>
+          <div class="diag-col-label" style="color:var(--re);">🔴 Data บอกว่า</div>
+          <div class="diag-item" style="border-color:var(--re);background:rgba(239,68,68,0.04);color:var(--tx2);">Hook ทำงานได้ คนหยุดดู แต่เนื้อหาตอนกลางทำให้เบื่อ</div>
+          <div class="diag-item" style="border-color:var(--re);background:rgba(239,68,68,0.04);color:var(--tx2);">มักเห็น Drop ที่ช่วง 30–50% ของคลิป</div>
+        </div>
+        <div>
+          <div class="diag-col-label" style="color:var(--ye);">🔎 วินิจฉัยว่า</div>
+          <div class="diag-item" style="border-color:var(--ye);background:rgba(245,158,11,0.04);color:var(--tx2);">เนื้อหากลางคลิปเล่าช้าเกินไป หรือไม่มีข้อมูลใหม่</div>
+          <div class="diag-item" style="border-color:var(--ye);background:rgba(245,158,11,0.04);color:var(--tx2);">ขาด Pattern Interrupt — ไม่มีการเปลี่ยน Pace, มุมกล้อง, หรือ Graphic</div>
+        </div>
+        <div>
+          <div class="diag-col-label" style="color:var(--gr);">✅ ต้องแก้ที่</div>
+          <div class="diag-item" style="border-color:var(--gr);background:rgba(34,197,94,0.04);color:var(--tx2);"><strong style="color:var(--tx);">ตัดเนื้อหาที่ซ้ำออก</strong> เหลือแต่ที่จำเป็น</div>
+          <div class="diag-item" style="border-color:var(--gr);background:rgba(34,197,94,0.04);color:var(--tx2);"><strong style="color:var(--tx);">เพิ่ม Pattern Interrupt</strong> ทุก 7–10 วินาที</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diagnostic 3 -->
+  <div class="diag-block">
+    <div class="diag-hd">
+      <div class="diag-num" style="color:var(--bl);">3</div>
+      <div>
+        <div class="diag-title">Completion Rate ต่ำมาก — คนไม่ดูจบ</div>
+        <div class="diag-sub">SYMPTOM: &lt; 10% ดูจบ ทั้งที่ Retention ต้นคลิปพอใช้ได้</div>
+      </div>
+      <span class="badge b-bl">Medium</span>
+    </div>
+    <div class="diag-body">
+      <div class="diag-grid">
+        <div>
+          <div class="diag-col-label" style="color:var(--re);">🔴 Data บอกว่า</div>
+          <div class="diag-item" style="border-color:var(--re);background:rgba(239,68,68,0.04);color:var(--tx2);">คนเริ่มดูแต่ไม่ได้เรื่องที่ Hook สัญญาไว้ หรือได้ช้าเกินไป</div>
+          <div class="diag-item" style="border-color:var(--re);background:rgba(239,68,68,0.04);color:var(--tx2);">คลิปยาวเกินไปสำหรับ Value ที่ให้</div>
+        </div>
+        <div>
+          <div class="diag-col-label" style="color:var(--ye);">🔎 วินิจฉัยว่า</div>
+          <div class="diag-item" style="border-color:var(--ye);background:rgba(245,158,11,0.04);color:var(--tx2);">ทำ Payoff ช้าเกินไป — คนรู้คำตอบก่อนแล้วออกไป</div>
+          <div class="diag-item" style="border-color:var(--ye);background:rgba(245,158,11,0.04);color:var(--tx2);">ไม่มีแรงจูงใจให้ดูต่อจนจบ</div>
+        </div>
+        <div>
+          <div class="diag-col-label" style="color:var(--gr);">✅ ต้องแก้ที่</div>
+          <div class="diag-item" style="border-color:var(--gr);background:rgba(34,197,94,0.04);color:var(--tx2);"><strong style="color:var(--tx);">ตัดให้สั้นลง</strong> — ให้ Value เร็วขึ้น อย่า Pad คอนเทนท์</div>
+          <div class="diag-item" style="border-color:var(--gr);background:rgba(34,197,94,0.04);color:var(--tx2);"><strong style="color:var(--tx);">เพิ่ม Teaser</strong> ในต้นคลิปว่า "ดูจนจบ เพราะ..."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Table -->
+  <div style="margin-top:20px;background:var(--card);border:1px solid var(--bd);border-radius:6px;overflow:hidden;">
+    <div style="padding:12px 18px;background:var(--card2);border-bottom:1px solid var(--bd);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--or);">สรุป: Symptom → วินิจฉัย → Fix</div>
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Metric ที่ผิดปกติ</th>
+          <th>วินิจฉัย</th>
+          <th>สิ่งที่ต้องแก้</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Most dropped at 0:01</strong></td>
+          <td>Hook ไม่ทำงาน ภาพเปิดไม่หยุดนิ้ว</td>
+          <td>เปลี่ยน 3 วินาทีแรก เปิดด้วยปัญหา/ผลลัพธ์/คำถาม</td>
+          <td><span class="badge b-re">Critical</span></td>
+        </tr>
+        <tr>
+          <td><strong>Avg Watch Time &lt; 30%</strong></td>
+          <td>เนื้อหากลางเล่าช้า ไม่มีสิ่งใหม่ๆ</td>
+          <td>ตัดเนื้อหาที่ซ้ำ เพิ่ม Pace เปลี่ยนมุมมองทุก 7-10 วิ</td>
+          <td><span class="badge b-re">High</span></td>
+        </tr>
+        <tr>
+          <td><strong>Completion Rate &lt; 10%</strong></td>
+          <td>คลิปยาวเกินคุณค่าที่ให้</td>
+          <td>ตัดให้สั้น หรือเพิ่ม Incentive ให้ดูจนจบ</td>
+          <td><span class="badge b-ye">Medium</span></td>
+        </tr>
+        <tr>
+          <td><strong>Like/Save สูง แต่ Views น้อย</strong></td>
+          <td>คนที่เห็นชอบ แต่ Platform ไม่ Push</td>
+          <td>Retention ต่ำเกินไป ต้องแก้ Hook + Watch Time ก่อน</td>
+          <td><span class="badge b-ye">Medium</span></td>
+        </tr>
+        <tr>
+          <td><strong>View สูง แต่ Engagement ต่ำ</strong></td>
+          <td>คอนเทนท์ไม่ได้กระตุ้นให้ทำอะไร</td>
+          <td>เพิ่ม CTA ชัดขึ้น ถามคำถามปลายคลิป กระตุ้น Comment</td>
+          <td><span class="badge b-bl">Low-Med</span></td>
+        </tr>
+        <tr>
+          <td><strong>3-sec Hold Rate &lt; 40%</strong></td>
+          <td>ภาพเปิดไม่ดึงดูด / ไม่ชัดว่าคลิปเกี่ยวกับอะไร</td>
+          <td>เปลี่ยน Thumbnail-in-video ที่เห็นในวินาทีแรก</td>
+          <td><span class="badge b-re">Critical</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 04: CASE STUDY DATA -->
+<section class="section" id="casedata">
+  <div class="sec-hd">
+    <div class="sec-tag">Section 04 — ข้อมูลจริงจากคลิป</div>
+    <div class="sec-title">วิเคราะห์คลิปจริง — ตัวเลขบอกอะไร</div>
+    <div class="sec-desc">จากการเก็บ Data ของคลิปที่ทำอยู่ นี่คือสิ่งที่ตัวเลขบอก</div>
+  </div>
+
+  <div class="g3" style="margin-bottom:24px;">
+    <div class="metric-card danger">
+      <div class="metric-name">Average Watch Time</div>
+      <div class="metric-val red">5.49s</div>
+      <div class="metric-context">คลิปยาว <strong style="color:var(--tx);">52 วินาที</strong> แปลว่าคนดูเฉลี่ยแค่ <strong style="color:var(--re);">10.6%</strong> ของคลิป — ยังไม่ทันเข้าถึงเนื้อหาหลักก็ออกไปแล้ว</div>
+      <div class="metric-target">ควรอยู่ที่: <span>&gt; 26 วินาที (50%+)</span></div>
+    </div>
+    <div class="metric-card danger">
+      <div class="metric-name">Completion Rate</div>
+      <div class="metric-val red">0.7%</div>
+      <div class="metric-context">ใน <strong style="color:var(--tx);">1,000 คน</strong> ที่เห็นคลิป มีแค่ <strong style="color:var(--re);">7 คน</strong> เท่านั้นที่ดูจบ ทำให้ Platform ไม่ Push Reach ต่อ</div>
+      <div class="metric-target">ควรอยู่ที่: <span>&gt; 25%</span></div>
+    </div>
+    <div class="metric-card danger">
+      <div class="metric-name">Most viewers stopped at</div>
+      <div class="metric-val red">0:01</div>
+      <div class="metric-context">จุดที่คนหยุดดูเยอะที่สุดคือวินาที 0–1 ของคลิป ยืนยันว่าปัญหาอยู่ที่ <strong style="color:var(--re);">Hook เปิด</strong> ไม่ใช่เนื้อหากลางหรือท้าย</div>
+      <div class="metric-target">เป้า: <span>Drop ไม่เกิน 20% ใน 5 วิแรก</span></div>
+    </div>
+  </div>
+
+  <div class="hbox" style="margin-bottom:20px;">
+    <div class="hbox-label">สิ่งที่ Data บอกอย่างชัดเจน</div>
+    <div class="hbox-text">
+      ปัญหา<strong>ไม่ได้อยู่ที่เนื้อหา</strong>ของคลิป — เพราะคนส่วนใหญ่ออกไปก่อนจะเห็นเนื้อหาด้วยซ้ำ
+      ปัญหาอยู่ที่<strong> "ประตูบาน" </strong>— คือ Hook 3 วินาทีแรกที่ไม่สามารถหยุดนิ้วให้คนดูต่อได้
+    </div>
+  </div>
+
+  <!-- Visual Retention Simulation -->
+  <div style="background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:22px 26px;margin-bottom:20px;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--or);margin-bottom:18px;">
+      สถานการณ์: คลิป 52 วินาที — คนออกตอนไหน?
+    </div>
+    <div class="ratio-row">
+      <div class="ratio-label">เริ่มดูคลิป (100%)</div>
+      <div class="ratio-bg"><div class="ratio-fill" style="width:100%;background:var(--bl);"></div></div>
+      <div class="ratio-pct" style="color:var(--bl);">100%</div>
+    </div>
+    <div class="ratio-row">
+      <div class="ratio-label">ผ่าน 0–3 วิ (Hook)</div>
+      <div class="ratio-bg"><div class="ratio-fill" style="width:32%;background:var(--re);"></div></div>
+      <div class="ratio-pct" style="color:var(--re);">~32%</div>
+    </div>
+    <div class="ratio-row">
+      <div class="ratio-label">ผ่าน 10 วิ (เข้าเนื้อหา)</div>
+      <div class="ratio-bg"><div class="ratio-fill" style="width:18%;background:var(--ye);"></div></div>
+      <div class="ratio-pct" style="color:var(--ye);">~18%</div>
+    </div>
+    <div class="ratio-row">
+      <div class="ratio-label">ผ่าน 26 วิ (ครึ่งคลิป)</div>
+      <div class="ratio-bg"><div class="ratio-fill" style="width:5%;background:var(--ye);"></div></div>
+      <div class="ratio-pct" style="color:var(--ye);">~5%</div>
+    </div>
+    <div class="ratio-row" style="margin:0">
+      <div class="ratio-label">ดูจบ (52 วิ)</div>
+      <div class="ratio-bg"><div class="ratio-fill" style="width:0.7%;background:var(--gr);min-width:4px;"></div></div>
+      <div class="ratio-pct" style="color:var(--re);">0.7%</div>
+    </div>
+    <div style="margin-top:14px;padding:12px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:4px;font-size:12px;color:var(--tx2);">
+      ⚠️ ตัวเลขเหล่านี้คือประมาณการจาก Avg Watch Time 5.49s / 52s = 10.6% — ส่วน Drop Curve ขึ้นกับ Retention Graph จริงของแต่ละคลิป ให้เปิด Analytics ใน Platform เพื่อดู Graph จริง
+    </div>
+  </div>
+
+  <div class="insight warn">
+    <strong>ผลกระทบต่อ Platform Algorithm:</strong> TikTok, Instagram, Facebook จะ Measure Retention ของทุกคลิป ถ้า Completion Rate ต่ำ Platform จะ Limit Reach คลิปนั้น ทำให้ยิ่งเสียวงจร — View น้อย → Retention ต่ำ → View น้อยลงอีก ทางแก้ต้องแก้ที่ Hook ก่อน ไม่ใช่เพิ่มงบ Boost
+  </div>
+</section>
+
+<!-- SECTION 05: HOW TO FIX -->
+<section class="section" id="fix">
+  <div class="sec-hd">
+    <div class="sec-tag">Section 05 — แก้ยังไง</div>
+    <div class="sec-title">ปรับ 3 จุด — ผล Retention เปลี่ยนทันที</div>
+    <div class="sec-desc">เมื่อรู้ว่าปัญหาคือ Hook ต้นคลิป การแก้ไขต้องโฟกัสที่สิ่งที่เกิดขึ้นใน 3 วินาทีแรกเป็นหลัก</div>
+  </div>
+
+  <!-- Hook Formula -->
+  <div style="margin-bottom:24px;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--or);margin-bottom:14px;">🔴 สิ่งที่ต้องแก้ทันที: Hook 3 วินาทีแรก</div>
+    <div class="pvs">
+      <div class="pvs-side pvs-left">
+        <div class="pvs-header"><span style="font-size:16px;">❌</span><div class="pvs-label red">Hook แบบเดิม (ที่ทำให้คนออก)</div></div>
+        <div class="pvs-item">เปิดด้วยโลโก้แบรนด์ + Jingle</div>
+        <div class="pvs-item">"สวัสดีทุกคน วันนี้เราจะมาแนะนำ..."</div>
+        <div class="pvs-item">ภาพสินค้าสวยๆ ในสตูดิโอ ไม่มีประเด็น</div>
+        <div class="pvs-item">เริ่มด้วยชื่อรุ่น Spec ราคา ทันที</div>
+        <div class="pvs-item">บรรยากาศ "ทั่วไป" ไม่มีอะไรน่าตกใจ</div>
+      </div>
+      <div class="pvs-side pvs-right">
+        <div class="pvs-header"><span style="font-size:16px;">✅</span><div class="pvs-label grn">Hook ใหม่ (ที่หยุดนิ้วได้)</div></div>
+        <div class="pvs-item">เปิดด้วย Action / ผลลัพธ์ที่น่าตกใจทันที</div>
+        <div class="pvs-item">"ถ้าตัดไม่ขาด ผมไม่แนะนำให้ซื้อ" → แล้ว Demo สด</div>
+        <div class="pvs-item">เปิดด้วยปัญหาที่กลุ่มเป้าหมายเจออยู่</div>
+        <div class="pvs-item">ใช้ Mystery: "เดาไหมว่าอันไหนแข็งกว่า?"</div>
+        <div class="pvs-item">VS / เปรียบเทียบ: ให้คนอยากรู้ผลลัพธ์</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Case Study: Reworked Clip Timeline -->
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gr);margin-bottom:14px;">✅ ตัวอย่าง: ลำดับคลิปที่ปรับใหม่แล้ว (จาก PPTX)</div>
+  <div class="case-clip">
+    <div class="case-hd"><div class="case-time">0:00–1.5s</div><div class="case-action">เหล็กเส้นเข้าเฟรม + ประโยค Hook</div></div>
+    <div class="case-why">"เหล็กหนาขนาดนี้ ถ้าตัดไม่ขาด ผมไม่แนะนำให้ซื้อ" — คนได้ยินแล้วต้องอยากรู้ว่าตัดขาดไหม สร้าง Tension ทันที</div>
+  </div>
+  <div class="case-clip">
+    <div class="case-hd"><div class="case-time">1.5–3.5s</div><div class="case-action">ตัดจริงทันที — Demo สด</div></div>
+    <div class="case-why">ไม่มี Buildup ยาว ตอบคำถามจาก Hook เลย คนที่สงสัยจะดูต่อเพื่อดูผลลัพธ์ — Watch Time เพิ่มขึ้นทันที</div>
+  </div>
+  <div class="case-clip">
+    <div class="case-hd"><div class="case-time">3.5–6s</div><div class="case-action">Close-up ตอนขาด — Payoff ชัดเจน</div></div>
+    <div class="case-why">ให้ Satisfaction กับคนดู สิ่งที่ Hook สัญญาไว้ถูก Deliver — คนที่ดูถึงจุดนี้มีแนวโน้มดูต่อถึงจบสูงมาก</div>
+  </div>
+  <div class="case-clip">
+    <div class="case-hd"><div class="case-time">6–9s</div><div class="case-action">โชว์ Grip / ใบมีด / แรงตัด</div></div>
+    <div class="case-why">ข้อมูล Product เริ่มเข้ามาหลังจากที่คนเชื่อแล้วว่า "ของดีจริง" — ไม่ใช่บอก Spec ก่อนพิสูจน์</div>
+  </div>
+  <div class="case-clip">
+    <div class="case-hd" style="border:none;"><div class="case-time">9–12s</div><div class="case-action">ปิดด้วย Message ชัดเจน</div></div>
+    <div class="case-why">"ของแบบนี้ ไม่ต้องพูดเยอะ ดูตอนตัดพอ" — CTA แบบไม่ Pushy ปล่อยให้หลักฐานพูดแทน สร้าง Brand Credibility</div>
+  </div>
+
+  <div class="insight good" style="margin-top:16px;">
+    <strong>ผลที่ควรเกิดขึ้น หลังปรับ Hook:</strong> Retention Rate สูงขึ้น → Average Watch Time เพิ่มเกิน 5.49s → Completion Rate ดีขึ้นจาก 0.7% → Platform Push Reach มากขึ้น → View ขึ้นโดยไม่ต้องเพิ่มงบ Boost
+  </div>
+</section>
+
+<!-- SECTION 06: FORMULA -->
+<section class="section" id="formula">
+  <div class="sec-hd">
+    <div class="sec-tag">Section 06 — สูตรคอนเทนท์ใหม่</div>
+    <div class="sec-title">เปลี่ยน Framework การทำคอนเทนท์</div>
+    <div class="sec-desc">จากสูตรเดิมที่เริ่มจากสินค้า → ไปยังสูตรใหม่ที่เริ่มจากปัญหาและพิสูจน์</div>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--re);margin-bottom:12px;">❌ สูตรเดิม</div>
+    <div class="formula">
+      <span>Show Product</span>
+      <span class="arrow">→</span>
+      <span>Tell Features</span>
+      <span class="arrow">→</span>
+      <span>CTA</span>
+    </div>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gr);margin-bottom:12px;">✅ สูตรใหม่</div>
+    <div class="formula" style="font-size:18px;">
+      <span>Hook Problem</span>
+      <span class="arrow">→</span>
+      <span>Show Proof</span>
+      <span class="arrow">→</span>
+      <span>Explain Benefit</span>
+      <span class="arrow">→</span>
+      <span>Close</span>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-step-num">01</div>
+      <div class="flow-step-title">Hook Problem (0–3 วิ)</div>
+      <div class="flow-step-body">เปิดด้วยปัญหา คำถาม หรือผลลัพธ์ที่ทำให้คนอยากรู้ต่อ — ไม่มีโลโก้ ไม่มี Intro ไม่มีการทักทาย</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">02</div>
+      <div class="flow-step-title">Show Proof (3–15 วิ)</div>
+      <div class="flow-step-body">Demo จริงทันที — ให้ผลลัพธ์พูดแทน อย่าบรรยายสิ่งที่สามารถโชว์ได้</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">03</div>
+      <div class="flow-step-title">Explain Benefit (15–45 วิ)</div>
+      <div class="flow-step-body">หลังจากพิสูจน์แล้ว ค่อยอธิบาย Feature / ราคา / Spec ที่เกี่ยวข้อง — คนจะฟังมากขึ้นเพราะเชื่อแล้ว</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-step-num">04</div>
+      <div class="flow-step-title">Close (ท้ายคลิป)</div>
+      <div class="flow-step-body">CTA ที่ชัดและไม่ Pushy — ถามคำถามกระตุ้น Comment หรือบอก Next Step ให้คนทำได้ทันที</div>
+    </div>
+  </div>
+
+  <div class="g2" style="margin-top:20px;">
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--or);margin-bottom:12px;">4 ประเภท Hook ที่ใช้ได้เสมอ</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="padding:12px 14px;background:var(--card);border-radius:5px;border:1px solid var(--bd);">
+          <div style="font-size:12.5px;font-weight:700;color:var(--tx);margin-bottom:4px;">🔴 Mystery / Challenge</div>
+          <div style="font-size:12px;color:var(--tx2);">"เดาไหมว่าอันไหนพังก่อน?" → เฉลยปลายคลิป คนต้องดูจนจบ</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--card);border-radius:5px;border:1px solid var(--bd);">
+          <div style="font-size:12.5px;font-weight:700;color:var(--tx);margin-bottom:4px;">🔴 Pain Point ตรงๆ</div>
+          <div style="font-size:12px;color:var(--tx2);">"ตัดแล้วหัวทื่อมาไหม? ดูวิธีนี้ก่อน" → กดปัญหาที่คนมีอยู่จริง</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--card);border-radius:5px;border:1px solid var(--bd);">
+          <div style="font-size:12.5px;font-weight:700;color:var(--tx);margin-bottom:4px;">🔴 Shocking Result</div>
+          <div style="font-size:12px;color:var(--tx2);">"ตกจากชั้น 3 ยังใช้ได้อยู่เลย" → ผลลัพธ์ที่ไม่คาดคิด ทำให้อยากดูหลักฐาน</div>
+        </div>
+        <div style="padding:12px 14px;background:var(--card);border-radius:5px;border:1px solid var(--bd);">
+          <div style="font-size:12.5px;font-weight:700;color:var(--tx);margin-bottom:4px;">🔴 VS / เปรียบเทียบ</div>
+          <div style="font-size:12px;color:var(--tx2);">"Stanley vs [แบรนด์] — ทดสอบ 5 อย่าง ผลเป็นยังไง?" → คนอยากรู้ว่าใครชนะ</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--re);margin-bottom:12px;">สิ่งที่ต้องหยุดทำทันที</div>
+      <div style="background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:6px;padding:16px;">
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--tx2);">
+          <div>✗ <strong style="color:var(--re);">เปิดด้วยโลโก้หรือ Jingle</strong> — คนไม่ได้มาเพื่อดูโลโก้แบรนด์</div>
+          <div>✗ <strong style="color:var(--re);">"สวัสดีทุกคน วันนี้..."</strong> — ประโยคที่คนดูแล้ว Mute ทันที</div>
+          <div>✗ <strong style="color:var(--re);">บอก Spec ก่อนพิสูจน์</strong> — ไม่มีใครสนใจ Spec ถ้ายังไม่เชื่อว่าของดี</div>
+          <div>✗ <strong style="color:var(--re);">ภาพสตูดิโอสว่างสะอาดเพียงอย่างเดียว</strong> — ดูเป็นโฆษณา ไม่ Authentic</div>
+          <div>✗ <strong style="color:var(--re);">ไม่มี CTA ปลายคลิป</strong> — เสียโอกาส Engagement ทุกครั้ง</div>
+          <div>✗ <strong style="color:var(--re);">คลิปยาวโดยไม่มีเหตุผล</strong> — ถ้า 30 วิพอ อย่าทำ 60 วิ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 07: A/B TESTING -->
+<section class="section" id="abtest">
+  <div class="sec-hd">
+    <div class="sec-tag">Section 07 — A/B Testing</div>
+    <div class="sec-title">ทำ A/B Test สม่ำเสมอ — ไม่เดา</div>
+    <div class="sec-desc">การแก้คอนเทนท์ต้องอาศัย Data ไม่ใช่ความรู้สึก — A/B Test ช่วยให้รู้ว่าอะไรได้ผลจริงกับกลุ่มเป้าหมายของเรา</div>
+  </div>
+
+  <div class="hbox" style="margin-bottom:24px;">
+    <div class="hbox-label">ทำไม A/B Test ถึงสำคัญ</div>
+    <div class="hbox-text">สิ่งที่ "คิดว่าดี" กับ "ที่คนดูชอบจริง" มักต่างกัน — A/B Test คือวิธีเดียวที่ทำให้รู้ความจริง โดยไม่ต้องเดา และทำให้การตัดสินใจครั้งต่อไป<strong> มีหลักฐาน Data รองรับ</strong></div>
+  </div>
+
+  <div style="background:var(--card);border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:20px;">
+    <div style="padding:12px 18px;background:var(--card2);border-bottom:1px solid var(--bd);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--or);">วิธี A/B Test อย่างถูกต้อง</div>
+    <div style="padding:20px;">
+      <div class="flow" style="margin-bottom:0;">
+        <div class="flow-step">
+          <div class="flow-step-num">1</div>
+          <div class="flow-step-title">เลือก 1 Variable</div>
+          <div class="flow-step-body">เปลี่ยนทีละอย่างเท่านั้น เช่น Hook เดียว ไม่เปลี่ยน Hook + Thumbnail + Caption พร้อมกัน</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">2</div>
+          <div class="flow-step-title">ทำ Version A และ B</div>
+          <div class="flow-step-body">เนื้อหาเหมือนกัน แต่เปิดด้วย Hook ต่างกัน 2 แบบ โพสต์ในเวลาใกล้เคียงกัน</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">3</div>
+          <div class="flow-step-title">วัดผล 24–48 ชม.</div>
+          <div class="flow-step-body">ดู Retention, Watch Time, Completion ของทั้งสอง Version ไม่ตัดสินจาก Like</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-num">4</div>
+          <div class="flow-step-title">สรุปและปรับ</div>
+          <div class="flow-step-body">Version ไหน Retention ดีกว่า → ใช้ Format นั้นเป็น Standard แล้ว Test ตัวแปรถัดไป</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div style="background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:18px 20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--or);margin-bottom:14px;">สิ่งที่ควร Test (เรียงตาม Priority)</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card2);border-radius:4px;">
+          <span class="badge b-re" style="font-size:8px;min-width:40px;text-align:center;">Critical</span>
+          <div style="font-size:12.5px;color:var(--tx2);">Hook 3 วิแรก — Problem vs Mystery vs Shocking Result</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card2);border-radius:4px;">
+          <span class="badge b-re" style="font-size:8px;min-width:40px;text-align:center;">Critical</span>
+          <div style="font-size:12.5px;color:var(--tx2);">ความยาวคลิป — 15 วิ vs 30 วิ vs 60 วิ สำหรับเนื้อหาเดียวกัน</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card2);border-radius:4px;">
+          <span class="badge b-ye" style="font-size:8px;min-width:40px;text-align:center;">High</span>
+          <div style="font-size:12.5px;color:var(--tx2);">เปิดด้วยการพูด vs ไม่มีเสียงพูด (Text Overlay อย่างเดียว)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card2);border-radius:4px;">
+          <span class="badge b-ye" style="font-size:8px;min-width:40px;text-align:center;">High</span>
+          <div style="font-size:12.5px;color:var(--tx2);">Style: Demo สด vs Talking Head vs Text Overlay เป็นหลัก</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card2);border-radius:4px;">
+          <span class="badge b-bl" style="font-size:8px;min-width:40px;text-align:center;">Medium</span>
+          <div style="font-size:12.5px;color:var(--tx2);">เวลาโพสต์ — เช้า vs เย็น vs กลางคืน สำหรับกลุ่มเป้าหมายช่าง</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card2);border-radius:4px;">
+          <span class="badge b-bl" style="font-size:8px;min-width:40px;text-align:center;">Medium</span>
+          <div style="font-size:12.5px;color:var(--tx2);">CTA ท้ายคลิป — ถามคำถาม vs บอก Next Step vs ไม่มี CTA</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:18px 20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gr);margin-bottom:14px;">ผลที่ต้องวัดหลัง A/B Test</div>
+      <table class="tbl">
+        <thead>
+          <tr><th>Metric</th><th>Version A</th><th>Version B</th><th>Winner</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>3-sec Hold Rate</td><td style="color:var(--tx3);">— %</td><td style="color:var(--tx3);">— %</td><td style="color:var(--tx3);">—</td></tr>
+          <tr><td>Avg Watch Time</td><td style="color:var(--tx3);">— s</td><td style="color:var(--tx3);">— s</td><td style="color:var(--tx3);">—</td></tr>
+          <tr><td>Completion Rate</td><td style="color:var(--tx3);">— %</td><td style="color:var(--tx3);">— %</td><td style="color:var(--tx3);">—</td></tr>
+          <tr><td>Total Views (48h)</td><td style="color:var(--tx3);">—</td><td style="color:var(--tx3);">—</td><td style="color:var(--tx3);">—</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px;font-size:12px;color:var(--tx3);">* ให้ทีมกรอก Template นี้ทุกครั้งที่ทำ A/B Test เพื่อ Build ฐาน Knowledge ของทีม</div>
+      <div class="insight" style="margin-top:12px;margin-bottom:0;">
+        <strong>กฎสำคัญ:</strong> ให้ Data ตัดสิน ไม่ใช่ความรู้สึกว่าคลิปไหน "น่าจะดีกว่า" — ทีมต้องเชื่อ Metrics มากกว่าความรู้สึก
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 08: WEEKLY CHECKLIST -->
+<section class="section" id="checklist">
+  <div class="sec-hd">
+    <div class="sec-tag">Section 08 — Weekly Checklist</div>
+    <div class="sec-title">ทำอะไรทุกสัปดาห์ — Process ที่ทำซ้ำได้</div>
+    <div class="sec-desc">เปลี่ยนการวิเคราะห์ Data จาก "ทำตามความรู้สึก" เป็น "Process มาตรฐาน" ที่ทีมทำซ้ำได้ทุกสัปดาห์</div>
+  </div>
+
+  <div class="g2" style="margin-bottom:20px;">
+    <div style="background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:18px 20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--or);margin-bottom:16px;">📅 ทุกวันจันทร์ (30 นาที) — Review สัปดาห์ที่ผ่านมา</div>
+      <div>
+        <div class="check-item">
+          <div class="check-icon">□</div>
+          <div>
+            <div class="check-content-title">เปิด Retention Graph ของทุกคลิปที่โพสต์ในสัปดาห์ที่ผ่านมา</div>
+            <div class="check-content-body">ดูว่าจุดดิ่งอยู่ตรงไหน — ต้นคลิป กลาง หรือท้าย บันทึกไว้ใน Log</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">□</div>
+          <div>
+            <div class="check-content-title">บันทึก Avg Watch Time, Completion Rate ของทุกคลิป</div>
+            <div class="check-content-body">เทียบกับ Baseline และเทียบกับสัปดาห์ก่อน — มีแนวโน้มดีขึ้นหรือแย่ลง</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">□</div>
+          <div>
+            <div class="check-content-title">ระบุคลิปที่ Perform ดีที่สุดและแย่ที่สุด</div>
+            <div class="check-content-body">ถามว่า Hook แตกต่างกันยังไง? เนื้อหาต่างกันยังไง? ดึงบทเรียนออกมา</div>
+          </div>
+        </div>
+        <div class="check-item" style="border:none;">
+          <div class="check-icon">□</div>
+          <div>
+            <div class="check-content-title">อ่าน Comment ที่เป็นคำถามดีๆ</div>
+            <div class="check-content-body">คำถามจาก Comment คือ Content Idea ฟรี — บันทึกไว้เป็น Topic ของสัปดาห์ถัดไป</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:18px 20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--bl);margin-bottom:16px;">📋 ทุกวันศุกร์ (20 นาที) — Plan สัปดาห์ถัดไป</div>
+      <div>
+        <div class="check-item">
+          <div class="check-icon">□</div>
+          <div>
+            <div class="check-content-title">เลือก Topics จาก Insight ที่ได้จากสัปดาห์ที่ผ่านมา</div>
+            <div class="check-content-body">ไม่เดา Topic ดูว่าสัปดาห์นี้มีคำถามอะไรเข้ามา หรือ Content ประเภทไหน Perform ดี</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">□</div>
+          <div>
+            <div class="check-content-title">เขียน Hook 3 วิแรกของทุกคลิปล่วงหน้า</div>
+            <div class="check-content-body">ก่อนถ่ายต้องรู้แล้วว่าจะเปิดด้วยอะไร — ห้ามคิด Hook หน้ากล้อง</div>
+          </div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">□</div>
+          <div>
+            <div class="check-content-title">กำหนด A/B Test สำหรับสัปดาห์ถัดไป</div>
+            <div class="check-content-body">เลือก 1 ตัวแปรที่จะ Test — Hook format? ความยาว? เวลาโพสต์?</div>
+          </div>
+        </div>
+        <div class="check-item" style="border:none;">
+          <div class="check-icon">□</div>
+          <div>
+            <div class="check-content-title">ตั้งเป้า Metrics ที่ต้องทำให้ได้ในสัปดาห์หน้า</div>
+            <div class="check-content-body">เช่น "Avg Watch Time ต้องเกิน 8 วิ" หรือ "Completion Rate ต้องขึ้นจาก 0.7% เป็น 3%+"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Targets -->
+  <div style="background:var(--card);border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-bottom:20px;">
+    <div style="padding:12px 18px;background:var(--card2);border-bottom:1px solid var(--bd);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--or);">เป้าหมาย Metrics ที่ต้องไปถึง (เทียบกับ Baseline ปัจจุบัน)</div>
+    <table class="tbl">
+      <thead>
+        <tr><th>Metric</th><th>ตอนนี้ (Baseline)</th><th>เป้าภายใน 2 สัปดาห์</th><th>เป้าภายใน 1 เดือน</th><th>วิธีแก้หลัก</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Avg Watch Time</strong></td>
+          <td style="color:var(--re);">5.49 วินาที (10.6%)</td>
+          <td style="color:var(--ye);">&gt; 10 วินาที (20%+)</td>
+          <td style="color:var(--gr);">&gt; 26 วินาที (50%+)</td>
+          <td>แก้ Hook เปิด + ตัดเนื้อหาซ้ำ</td>
+        </tr>
+        <tr>
+          <td><strong>Completion Rate</strong></td>
+          <td style="color:var(--re);">0.7%</td>
+          <td style="color:var(--ye);">&gt; 5%</td>
+          <td style="color:var(--gr);">&gt; 20%</td>
+          <td>ตัดคลิปให้สั้น + เพิ่ม Incentive ดูจนจบ</td>
+        </tr>
+        <tr>
+          <td><strong>3-sec Hold Rate</strong></td>
+          <td style="color:var(--re);">ยังไม่ได้วัด (สันนิษฐานต่ำ)</td>
+          <td style="color:var(--ye);">&gt; 50%</td>
+          <td style="color:var(--gr);">&gt; 65%</td>
+          <td>เปลี่ยน Hook 3 วิแรกตามสูตรใหม่</td>
+        </tr>
+        <tr>
+          <td><strong>Reach / คลิป</strong></td>
+          <td style="color:var(--re);">ต่ำ (Platform ไม่ Push)</td>
+          <td style="color:var(--ye);">+20% จาก Baseline</td>
+          <td style="color:var(--gr);">+50%+ จาก Baseline</td>
+          <td>Retention ดีขึ้น → Platform Push เอง</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Final Call to Action -->
+  <div style="background:linear-gradient(135deg,#0d0a07,#180f06);border:1px solid rgba(255,107,0,0.25);border-radius:6px;padding:36px;text-align:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:400px;height:300px;background:radial-gradient(circle,rgba(255,107,0,0.07) 0%,transparent 65%);pointer-events:none;"></div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--or);margin-bottom:14px;">สรุป — สิ่งที่ต้องทำตั้งแต่คลิปถัดไป</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,4vw,46px);letter-spacing:2px;color:var(--tx);line-height:1.15;margin-bottom:18px;">
+      อ่าน RETENTION ก่อน<br>
+      <span style="color:var(--or);">วินิจฉัยให้ถูกจุด</span><br>
+      แล้วค่อย Fix
+    </div>
+    <div style="font-size:14px;color:var(--tx2);max-width:580px;margin:0 auto;line-height:1.85;">
+      คอนเทนท์ที่ดีที่สุดคือคอนเทนท์ที่แก้ปัญหา<strong style="color:var(--tx);">ถูกจุด</strong> — ไม่ใช่คอนเทนท์ที่ทำมากที่สุด
+      ถ้าเรารู้ว่าคนออกที่ 0:01 การแก้ Caption หรือ Thumbnail ไม่ช่วยอะไร
+      สิ่งเดียวที่ต้องทำคือ <strong style="color:var(--or);">แก้ Hook 3 วินาทีแรก</strong>
+    </div>
+  </div>
+</section>
+
+</div><!-- /main -->
+
+<script>
+// Scroll progress bar
+window.addEventListener('scroll', () => {
+  const d = document.documentElement;
+  const pct = (d.scrollTop / (d.scrollHeight - d.clientHeight)) * 100;
+  document.getElementById('spb').style.width = pct + '%';
+
+  // Active nav
+  const secs = document.querySelectorAll('section[id]');
+  const navs = document.querySelectorAll('.ni');
+  let cur = '';
+  secs.forEach(s => { if (d.scrollTop >= s.offsetTop - 100) cur = s.id; });
+  navs.forEach(n => {
+    n.classList.remove('active');
+    if (n.getAttribute('href') === '#' + cur) n.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
